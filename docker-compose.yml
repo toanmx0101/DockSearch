@@ -1,0 +1,53 @@
+version: '3'
+services:
+  esmaster:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
+    container_name: esmaster
+    environment:
+      - node.name=esmaster
+      - node.master=true
+      - node.data=false
+      - cluster.name=es_cluster
+      - cluster.initial_master_nodes=esmaster
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - http.cors.enabled=true
+      - "http.cors.allow-origin=*"
+    networks:
+      - elk
+    ports:
+      - 9200:9200
+      - 9300:9300
+    restart: unless-stopped
+  esdata1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
+    container_name: esdata1
+    environment:
+      - node.name=elasticsearch1
+      - cluster.name=es_cluster
+      - node.master=false
+      - node.data=true
+      - discovery.seed_hosts=esmaster
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - http.cors.enabled=true
+      - "http.cors.allow-origin=*"
+    networks:
+      - elk
+    restart: unless-stopped
+  esdata2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
+    container_name: esdata2
+    environment:
+      - node.name=elasticsearch2
+      - cluster.name=es_cluster
+      - node.master=false
+      - node.data=true
+      - discovery.seed_hosts=esmaster
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - http.cors.enabled=true
+      - "http.cors.allow-origin=*"
+    networks:
+      - elk
+    restart: unless-stopped
+networks:
+  elk:
+    driver: bridge
