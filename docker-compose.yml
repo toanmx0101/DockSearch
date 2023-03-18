@@ -27,6 +27,7 @@ services:
       - node.master=false
       - node.data=true
       - discovery.seed_hosts=esmaster
+      - cluster.initial_master_nodes=esmaster
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - http.cors.enabled=true
       - "http.cors.allow-origin=*"
@@ -42,12 +43,35 @@ services:
       - node.master=false
       - node.data=true
       - discovery.seed_hosts=esmaster
+      - cluster.initial_master_nodes=esmaster
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - http.cors.enabled=true
       - "http.cors.allow-origin=*"
     networks:
       - elk
     restart: unless-stopped
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.10.1
+    environment:
+      SERVER_NAME: localhost
+      ELASTICSEARCH_HOSTS: http://esmaster:9200/
+    ports:
+      - 5601:5601
+    networks:
+      - elk
+    depends_on:
+      - esmaster
+      - esdata1
+      - esdata2
+    restart: unless-stopped
+  metricbeat:
+    image: docker.elastic.co/beats/metricbeat:7.10.1
+    environment:
+      - setup.kibana.host=kibana:5601
+      - output.elasticsearch.hosts=["http://esmaster:9200"]
+    networks:
+      - elk
+
 networks:
   elk:
     driver: bridge
